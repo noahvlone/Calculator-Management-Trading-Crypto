@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kalkulator Money Management Trading</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        .input-group { margin-bottom: 15px; }
+        label { display: inline-block; width: 200px; }
+        input { padding: 5px; width: 200px; }
+        button { 
+            padding: 10px 20px; 
+            background: #4CAF50; 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+            border-radius: 4px;
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        }
+        th, td { 
+            border: 1px solid #ddd; 
+            padding: 12px; 
+            text-align: center; 
+        }
+        th { 
+            background-color: #4CAF50; 
+            color: white;
+            font-weight: bold;
+        }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        tr:hover { background-color: #f1f1f1; }
+        .error { 
+            color: #ff4444; 
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #ffebee;
+            border-radius: 4px;
+        }
+        h2, h3 { color: #333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Kalkulator Money Management Trading Crypto</h2>
+        <div class="input-group">
+            <label>Total Modal (Rp):</label>
+            <input type="number" id="modal" placeholder="Masukkan modal">
+        </div>
+        <div class="input-group">
+            <label>Harga Coin Saat Ini (Rp):</label>
+            <input type="number" id="hargaCoin" placeholder="Masukkan harga coin">
+        </div>
+        <div class="input-group">
+            <label>Target Profit (%):</label>
+            <input type="number" id="targetProfit" placeholder="Masukkan target profit">
+        </div>
+        <button onclick="hitung()">Hitung Sekarang</button>
+        <div id="errorMessage" class="error"></div>
+
+        <h3>📈 Open Posts Buy (OPB)</h3>
+        <table id="opbTable">
+            <tr>
+                <th>Level</th>
+                <th>Harga Beli (Rp)</th>
+                <th>Alokasi Modal (Rp)</th>
+            </tr>
+        </table>
+
+        <h3>📉 Open Posts Sell (OPS)</h3>
+        <table id="opsTable">
+            <tr>
+                <th>Level</th>
+                <th>Harga Jual (Rp)</th>
+                <th>Jumlah Coin</th>
+                <th>Profit (Rp)</th>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        function hitung() {
+            // Reset tampilan
+            document.getElementById('errorMessage').innerHTML = '';
+            document.getElementById('opbTable').innerHTML = `
+                <tr>
+                    <th>Level</th>
+                    <th>Harga Beli (Rp)</th>
+                    <th>Alokasi Modal (Rp)</th>
+                </tr>`;
+            
+            document.getElementById('opsTable').innerHTML = `
+                <tr>
+                    <th>Level</th>
+                    <th>Harga Jual (Rp)</th>
+                    <th>Jumlah Coin</th>
+                    <th>Profit (Rp)</th>
+                </tr>`;
+
+            // Ambil nilai input
+            const modal = parseFloat(document.getElementById('modal').value) || 0;
+            const hargaCoin = parseFloat(document.getElementById('hargaCoin').value) || 0;
+            const targetProfit = (parseFloat(document.getElementById('targetProfit').value) || 0)/100;
+
+            // Validasi input
+            if(modal <= 0 || hargaCoin <= 0 || targetProfit <= 0) {
+                document.getElementById('errorMessage').innerHTML = 
+                    "⚠️ Mohon isi semua kolom dengan angka yang valid!";
+                return;
+            }
+
+            // Strategi Money Management
+            const alokasiModal = [0.10, 0.20, 0.20, 0.20, 0.30];
+            const persentaseTurun = [0.0, 0.03, 0.12, 0.24, 0.48]; // Penyesuaian persentase
+
+            let totalCoin = 0;
+            let totalInvestasi = 0;
+
+            for(let i=0; i<5; i++){
+                // Hitung OPB
+                const hargaBeli = hargaCoin * (1 - persentaseTurun[i]);
+                const modalAlokasi = modal * alokasiModal[i];
+                const coin = modalAlokasi / hargaBeli;
+                
+                totalCoin += coin;
+                totalInvestasi += modalAlokasi;
+
+                // Tampilkan OPB
+                const opbRow = document.createElement('tr');
+                opbRow.innerHTML = `
+                    <td>OPB-${i+1}</td>
+                    <td>${hargaBeli.toLocaleString('id-ID', {maximumFractionDigits: 0})}</td>
+                    <td>${modalAlokasi.toLocaleString('id-ID', {maximumFractionDigits: 0})}</td>
+                `;
+                document.getElementById('opbTable').appendChild(opbRow);
+
+                // Hitung OPS
+                const avgPrice = totalInvestasi / totalCoin;
+                const hargaJual = avgPrice * (1 + targetProfit);
+                const profit = (hargaJual - avgPrice) * totalCoin;
+
+                // Tampilkan OPS
+                const opsRow = document.createElement('tr');
+                opsRow.innerHTML = `
+                    <td>OPS-${i+1}</td>
+                    <td>${hargaJual.toLocaleString('id-ID', {maximumFractionDigits: 0})}</td>
+                    <td>${totalCoin.toFixed(3)}</td>
+                    <td style="color: #4CAF50; font-weight: bold;">${profit.toLocaleString('id-ID', {maximumFractionDigits: 0})}</td>
+                `;
+                document.getElementById('opsTable').appendChild(opsRow);
+            }
+        }
+    </script>
+</body>
+</html>
